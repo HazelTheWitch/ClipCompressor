@@ -4,7 +4,7 @@ packageName = 'clip-shortener'
 
 major = 0
 minor = 0
-micro = 1
+micro = 2
 
 pythonVersion = '3.6'
 
