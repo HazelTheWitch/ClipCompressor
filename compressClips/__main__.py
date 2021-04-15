@@ -49,23 +49,27 @@ def _compressFiles(files: Deque['Path'], compression: int, outDir: str, overwrit
         post = Path(outDir, current.name)
 
         logger.log(2, f'[+] Compressing {current.name}.')
-        _, err = (
-                ffmpeg.input(str(current.resolve()))
-                .output(str(post), vcodec='libx265', crf=str(compression))
-        ).run(quiet=True, overwrite_output=overwrite)
+        try:
+            _, err = (
+                    ffmpeg.input(str(current.resolve()))
+                    .output(str(post), vcodec='libx265', crf=str(compression))
+            ).run(quiet=True, overwrite_output=overwrite)
 
-        currSize = current.stat().st_size
-        postSize = post.stat().st_size
+            currSize = current.stat().st_size
+            postSize = post.stat().st_size
 
-        logger.log(2, f'[~] {current.name} completed ({(100*currSize/postSize):.2f}% compression).')
+            logger.log(2, f'[~] {current.name} completed ({(100 * currSize / postSize):.2f}% compression).')
+        except ffmpeg._run.Error:
+            logger.log(3, f'[-] Could not compress {current.name}.')
+
 
 
 @click.command()
 @click.option('-f', '--filetypes', multiple=True, default=['.mp4'], type=str, show_default=True)
 @click.option('-o', '--output-directory', 'outputDirectory', default='compressed', type=click.Path(file_okay=False), required=True)
-@click.option('-t', '--threads', 'threadCount', type=click.IntRange(min=1), default=1, required=True)
-@click.option('--minimum-size', 'minimumSize', type=FILESIZETYPE, default='0B')
-@click.option('-c', '--compression', type=click.IntRange(min=24, max=30), default=24, required=True)
+@click.option('-t', '--threads', 'threadCount', type=click.IntRange(min=1), default=1, required=True, show_default=True)
+@click.option('--minimum-size', 'minimumSize', type=FILESIZETYPE, default='1MB', show_default=True)
+@click.option('-c', '--compression', type=click.IntRange(min=24, max=30), default=24, required=True, show_default=True)
 @click.option('--overwrite/--no-overwrite', default=True)
 @click.option('-v', '--verbose', count=True)
 def compressClips(filetypes: List[str], outputDirectory: str, threadCount: int, minimumSize: int, compression: int, overwrite: bool, verbose: int) -> None:
@@ -85,6 +89,9 @@ def compressClips(filetypes: List[str], outputDirectory: str, threadCount: int, 
 
     logger.log(3, '[+] Discovering files.')
     files = deque(Discoverer(fileTypes=filetypes, minimumSize=minimumSize).discover())
+
+    if threadCount > len(files):
+        threadCount = len(files)
 
     threads = []
 

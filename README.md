@@ -7,4 +7,4 @@ Clips are big, compress all of them at once with FFMPEG.
 3. Install [FFmpeg](https://www.ffmpeg.org).
 
 # Usage
-Go to the directory with clips and run `compressClips -h` to view help.
+Go to the directory with clips and run `compressClips --help` to view help.

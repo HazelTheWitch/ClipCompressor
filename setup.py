@@ -4,7 +4,7 @@ packageName = 'compress-clips'
 
 major = 1
 minor = 0
-micro = 0
+micro = 1
 
 pythonVersion = '3.6'
 
