@@ -2,9 +2,9 @@ import setuptools
 
 packageName = 'compress-clips'
 
-major = 0
+major = 1
 minor = 0
-micro = 4
+micro = 0
 
 pythonVersion = '3.6'
 

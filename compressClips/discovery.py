@@ -5,17 +5,9 @@ from pathlib import Path
 
 __all__ = [
     'Discoverer',
-    'File',
 ]
 
 logger = getLogger('compressClips')
-
-
-@dataclass(frozen=True)
-class File:
-    """A representation of a discovered file."""
-    path: str
-    stem: str
 
 
 @dataclass(frozen=True)
@@ -25,7 +17,7 @@ class Discoverer:
     fileTypes: Optional[List[str]] = None
     minimumSize: Optional[int] = None
 
-    def discover(self, directory: Optional[str] = None) -> List['File']:
+    def discover(self, directory: Optional[str] = None) -> List['Path']:
         """
         Iterate through the files in a given directory and returns all valid files.
 
@@ -58,6 +50,6 @@ class Discoverer:
                     continue
 
                 logger.log(1, f'[+] Discovered "{child.name}".')
-                files.append(File(str(child.resolve()), child.stem))
+                files.append(child)
 
         return files
