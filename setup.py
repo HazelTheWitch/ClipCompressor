@@ -1,10 +1,10 @@
 import setuptools
 
-packageName = 'clip-shortener'
+packageName = 'compress-clips'
 
 major = 0
 minor = 0
-micro = 2
+micro = 3
 
 pythonVersion = '3.6'
 
