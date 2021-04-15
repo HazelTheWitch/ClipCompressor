@@ -52,7 +52,7 @@ def _compressFiles(files: Deque['Path'], compression: int, outDir: str, overwrit
         try:
             _, err = (
                     ffmpeg.input(str(current.resolve()))
-                    .output(str(post), vcodec='libx265', crf=str(compression))
+                    .output(str(post), vcodec='libx264', crf=str(compression), format=current.suffix[1:], movflags='use_metadata_tags', map_metadata='0')
             ).run(quiet=True, overwrite_output=overwrite)
 
             currSize = current.stat().st_size
