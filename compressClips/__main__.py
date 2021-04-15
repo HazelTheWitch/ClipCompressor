@@ -43,7 +43,8 @@ class FileSizeType(click.ParamType):
 FILESIZETYPE = FileSizeType()
 
 
-def _compressFiles(files: Deque['Path'], compression: int, outDir: str, overwrite: bool, deleteAfter: bool) -> None:
+def _compressFiles(files: Deque['Path'], compression: int, outDir: str, overwrite: bool, deleteAfter: bool, hwaccel: bool) -> None:
+    enc = 'h264_nvenc' if hwaccel else 'libx264'
     while files:
         current = files.pop()
         post = Path(outDir, current.name)
@@ -52,7 +53,7 @@ def _compressFiles(files: Deque['Path'], compression: int, outDir: str, overwrit
         try:
             _, err = (
                     ffmpeg.input(str(current.resolve()))
-                    .output(str(post), vcodec='libx264', crf=str(compression), format=current.suffix[1:], movflags='use_metadata_tags', map_metadata='0')
+                    .output(str(post), vcodec=enc, crf=str(compression), format=current.suffix[1:], movflags='use_metadata_tags', map_metadata='0')
             ).run(quiet=True, overwrite_output=overwrite)
 
             currSize = current.stat().st_size
@@ -77,11 +78,16 @@ def _compressFiles(files: Deque['Path'], compression: int, outDir: str, overwrit
 @click.option('--overwrite/--no-overwrite', default=True)
 @click.option('--delete-after/--no-delete-after', 'deleteAfter', default=False)
 @click.option('-v', '--verbose', count=True)
-def compressClips(filetypes: List[str], outputDirectory: str, threadCount: int, minimumSize: int, compression: int, overwrite: bool, verbose: int, deleteAfter: bool) -> None:
+@click.option('-gpu', '--use-gpu', 'hwaccel', is_flag=True, default=False)
+def compressClips(filetypes: List[str], outputDirectory: str, threadCount: int, minimumSize: int, compression: int, overwrite: bool, verbose: int, deleteAfter: bool, hwaccel: bool) -> None:
     logLevel = max(4 - verbose, 1)
 
     logger.setLevel(logLevel)
     consoleHandler.setLevel(logLevel)
+
+    if hwaccel and threadCount > 1:
+        logger.log(4, f'[-] Sadly multi-threaded GPU enabled compression is not supported. Please use one or the other.')
+        return
 
     for i, ft in enumerate(filetypes):
         if ft[0] != '.':
@@ -102,8 +108,11 @@ def compressClips(filetypes: List[str], outputDirectory: str, threadCount: int, 
 
     logger.log(3, '[+] Initializing threads.')
     for _ in range(threadCount):
-        t = threading.Thread(target=_compressFiles, args=(files, compression, outDir, overwrite, deleteAfter), daemon=True)
+        t = threading.Thread(target=_compressFiles, args=(files, compression, outDir, overwrite, deleteAfter, hwaccel), daemon=True)
         threads.append(t)
+
+        if hwaccel:
+            hwaccel = False
 
     logger.log(3, '[+] Starting threads.')
     for t in threads:
