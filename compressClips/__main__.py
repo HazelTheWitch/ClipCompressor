@@ -43,7 +43,7 @@ class FileSizeType(click.ParamType):
 FILESIZETYPE = FileSizeType()
 
 
-def _compressFiles(files: Deque['Path'], compression: int, outDir: str, overwrite: bool) -> None:
+def _compressFiles(files: Deque['Path'], compression: int, outDir: str, overwrite: bool, deleteAfter: bool) -> None:
     while files:
         current = files.pop()
         post = Path(outDir, current.name)
@@ -58,6 +58,10 @@ def _compressFiles(files: Deque['Path'], compression: int, outDir: str, overwrit
             currSize = current.stat().st_size
             postSize = post.stat().st_size
 
+            if deleteAfter:
+                logger.log(2, f'[+] Deleting original {current.name}.')
+                current.unlink()
+
             logger.log(2, f'[~] {current.name} completed ({(100 * currSize / postSize):.2f}% compression).')
         except ffmpeg._run.Error:
             logger.log(3, f'[-] Could not compress {current.name}.')
@@ -71,8 +75,9 @@ def _compressFiles(files: Deque['Path'], compression: int, outDir: str, overwrit
 @click.option('--minimum-size', 'minimumSize', type=FILESIZETYPE, default='1MB', show_default=True)
 @click.option('-c', '--compression', type=click.IntRange(min=24, max=30), default=24, required=True, show_default=True)
 @click.option('--overwrite/--no-overwrite', default=True)
+@click.option('--delete-after/--no-delete-after', 'deleteAfter', default=False)
 @click.option('-v', '--verbose', count=True)
-def compressClips(filetypes: List[str], outputDirectory: str, threadCount: int, minimumSize: int, compression: int, overwrite: bool, verbose: int) -> None:
+def compressClips(filetypes: List[str], outputDirectory: str, threadCount: int, minimumSize: int, compression: int, overwrite: bool, verbose: int, deleteAfter: bool) -> None:
     logLevel = max(4 - verbose, 1)
 
     logger.setLevel(logLevel)
@@ -97,7 +102,7 @@ def compressClips(filetypes: List[str], outputDirectory: str, threadCount: int, 
 
     logger.log(3, '[+] Initializing threads.')
     for _ in range(threadCount):
-        t = threading.Thread(target=_compressFiles, args=(files, compression, outDir, overwrite), daemon=True)
+        t = threading.Thread(target=_compressFiles, args=(files, compression, outDir, overwrite, deleteAfter), daemon=True)
         threads.append(t)
 
     logger.log(3, '[+] Starting threads.')
