@@ -44,22 +44,3 @@ class Discoverer:
                 files.append(str(child.resolve()))
 
         return files
-        # if directory is None:
-        #     directory = '.'
-        #
-        # files = []
-        #
-        # for obj in listdir(directory):
-        #     if self.fileType is not None:
-        #         if obj.split('.')[-1] != self.fileType:
-        #             continue
-        #
-        #     path = join(directory, obj)
-        #
-        #     if self.minimumSize is not None and self.minimumSize > 0:
-        #         stats = Path(path)
-        #
-        #     if isfile(path):
-        #         files.append(path)
-        #
-        # return files
