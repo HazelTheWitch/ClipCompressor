@@ -19,6 +19,7 @@ setuptools.setup(
     long_description=description,
     long_description_content_type='text/markdown',
     packages=setuptools.find_packages(),
+    include_package_data=True,
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
@@ -29,4 +30,8 @@ setuptools.setup(
         'click',
         'ffmpeg-python',
     ],
+    entry_points='''
+        [console_scripts]
+        compressClips=compressClips.__main__:compressClips
+    '''
 )
