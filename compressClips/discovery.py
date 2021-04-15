@@ -7,7 +7,7 @@ __all__ = [
     'Discoverer',
 ]
 
-logger = getLogger('clipShortener')
+logger = getLogger('compressClips')
 
 
 @dataclass(frozen=True)
