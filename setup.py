@@ -15,7 +15,7 @@ setuptools.setup(
     name=f'{packageName}-hazel-trinity',
     version=f'{major}.{minor}.{micro}',
     author='Hazel Trinity',
-    description='Shortens clips into a small .',
+    description='Compresses video clips into a smaller forms because Nvidia is awful.',
     long_description=description,
     long_description_content_type='text/markdown',
     packages=setuptools.find_packages(),
